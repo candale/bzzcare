@@ -6,7 +6,7 @@
 
 
 RFM69* make_radio();
-Payload* get_message(RFM69* radio);
-void send_message(RFM69* radio, int target, Payload* data);
+Command* get_message(RFM69* radio);
+void send_message(RFM69* radio, int target, Command* data);
 
 #endif

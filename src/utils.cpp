@@ -24,24 +24,23 @@ RFM69* make_radio() {
     return radio;
 }
 
-Payload* get_message(RFM69* radio) {
+Command* get_message(RFM69* radio) {
     if(radio->receiveDone() == false) {
         return 0;
     }
 
-    if (radio->DATALEN != sizeof(Payload)) {
-        Serial.print("Invalid payload received, not matching Payload struct!");
+    // TODO: add both ways ACK checks here as in examples
+
+    if (radio->DATALEN != sizeof(Command)) {
+        Serial.print("Invalid Command received, not matching Command struct!");
         return 0;
     }
 
     Serial.print('[');Serial.print(radio->SENDERID, DEC);Serial.print("] ");
-    for (byte i = 0; i < radio->DATALEN; i++) {
-      Serial.print((char)radio->DATA[i]);
-    }
     Serial.print("   [RX_RSSI:");Serial.print(radio->readRSSI());Serial.print("]");
 
-    Payload* data = (Payload*)malloc(sizeof(Payload));
-    memcpy(data, (const void*)radio->DATA, sizeof(Payload));
+    Command* data = (Command*)malloc(sizeof(Command));
+    memcpy(data, (const void*)radio->DATA, sizeof(Command));
 
     if (radio->ACKRequested())
     {
@@ -53,7 +52,7 @@ Payload* get_message(RFM69* radio) {
 }
 
 
-void send_message(RFM69* radio, int target, Payload* data) {
+void send_message(RFM69* radio, int target, Command* data) {
     if (radio->sendWithRetry(target, (const void*)(data), sizeof(*data))) {
         return true;
     }

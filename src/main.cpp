@@ -5,9 +5,6 @@
 #include "utils.h"
 #include "config.h"
 
-
-#define ROLE_MASTER
-
 RFM69* radio;
 
 #ifdef ROLE_SLAVE
@@ -22,33 +19,38 @@ void setup() {
 void loop() {
 
     #ifdef ROLE_MASTER
-        Payload* data = get_message(radio);
+        Command* data = get_message(radio);
         if (data == 0) {
             return;
         }
 
         Serial.print(" nodeId=");
-        Serial.print(data->nodeId);
-        Serial.print(" uptime=");
-        Serial.print(data->uptime);
-        Serial.print(" temp=");
-        Serial.print(data->temp);
+        Serial.print(data->node_id);
+        Serial.print(" command=");
+        Serial.print((char)data->command);
+        Serial.print(" payload=");
+        Serial.print(data->payload);
         Serial.println("");
+        delete(data);
     #endif
 
     #ifdef ROLE_SLAVE
-        get_message(radio);
+        Command* data = get_message(radio);
+        if(data != 0) {
+            delete(data);
+        }
+
         int currPeriod = millis() / TRANSMITPERIOD;
         if (currPeriod != lastPeriod)
         {
-            Payload theData;
+            Command cmd;
              //fill in the struct with new values
-            theData.nodeId = NODEID;
-            theData.uptime = millis();
-            theData.temp = 91.23; //it's hot!
+            cmd.node_id = NODEID;
+            cmd.command = (byte)'A';
+            strcpy(cmd.payload, "cool payload");
 
             Serial.println("Sending ...");
-            send_message(radio, GATEWAYID, &theData);
+            send_message(radio, GATEWAYID, &cmd);
             lastPeriod=currPeriod;
         }
     #endif
