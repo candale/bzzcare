@@ -4,7 +4,7 @@
 #include <RFM69.h>
 
 // #define ROLE_SLAVE
-#define ROLE_MASTER
+// #define ROLE_MASTER
 
 // The id of the master
 #define GATEWAYID 1
@@ -66,17 +66,13 @@ typedef struct {
 
 // When this is a master, NODEID must always be 1
 #ifdef ROLE_MASTER
-
     #define NODEID 1
-
-#endif
-
-// When this is a slave, must always be 1
-#ifdef ROLE_SLAVE
-
+#elif defined ROLE_SLAVE
+    // When this is a slave, must always be 1
     #define NODEID 99
-    #define GATEWAYID 1
-
+    #define GATEWAYID
+#else
+    #error "You must define this as either ROLE_MASTER or ROLE_SLAVE"
 #endif
 
 #define NETWORKID 100

@@ -4,7 +4,7 @@
 #include "master.h"
 
 
-void master_handle(RFM69* radio) {
+void handle(RFM69* radio) {
     NodeCmd* data = get_message(radio);
     if(data != 0) {
         print_command(data);

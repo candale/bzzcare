@@ -7,7 +7,7 @@
 int last_period = -1;
 
 
-void slave_handle(RFM69* radio) {
+void handle(RFM69* radio) {
     int current_period = millis() / TRANSMITPERIOD;
     if(current_period != last_period) {
         Serial.println("Sending message ...");

@@ -5,8 +5,10 @@
 #include "utils.h"
 #include "config.h"
 
-#include "slave.h"
-#include "master.h"
+// TODO: link slave/master dynamically and have both function named "handle"
+
+#include "commands.h"
+#include "work.h"
 
 RFM69* radio;
 
@@ -17,12 +19,5 @@ void setup() {
 }
 
 void loop() {
-    #ifdef ROLE_MASTER
-        master_handle(radio);
-    #endif
-
-    #ifdef ROLE_SLAVE
-        slave_handle(radio);
-    #endif
-
+    handle(radio);
 }
