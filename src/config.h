@@ -26,27 +26,37 @@
 //uncomment only for RFM69HW/HCW! Leave out if you have RFM69W/CW!
 #define IS_RFM69HW_HCW
 
-#define TRANSMITPERIOD 1000
-
 #define PAYLOAD_SIZE 44
 
+#define SEND_NUM_RETRIES 4
+
 /*
-This is supposed to encapsulate the node from which the command came from,
-the command, from 0 to 255, and a payload that will be the string
-representation of whatever is sent.
+This is supposed to encapsulate the command, from 0 to 255, and a payload
+that will be the string representation of whatever is sent.
+
+This representation is used for transport.
 
 Everybody has the responsibility to interpret the payload as necessary.
 */
 typedef struct {
-    // 16 bytes
-    int node_id;
     // 1 byte
     byte command;
     // 44 bytes for payload
     char payload[PAYLOAD_SIZE];
-} Command;
+} TransportCmd;
 
-// EVERYTHING THAT IS BELOW YOU DON'T USUALLY TOUCH
+/*
+This encapsulates the a TransportCmd and adds additional information about
+the node and strength of the signal
+*/
+typedef struct {
+    TransportCmd* cmd;
+    int node_id;
+    int rssi;
+} NodeCmd;
+
+
+// == EVERYTHING THAT IS BELOW YOU DON'T USUALLY TOUCH ==
 
 #ifdef ROLE_MASTER
 #ifdef ROLE_SLAVE

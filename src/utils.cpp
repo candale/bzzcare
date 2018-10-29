@@ -24,23 +24,25 @@ RFM69* make_radio() {
     return radio;
 }
 
-Command* get_message(RFM69* radio) {
+NodeCmd* get_message(RFM69* radio) {
     if(radio->receiveDone() == false) {
         return 0;
     }
 
     // TODO: add both ways ACK checks here as in examples
 
-    if (radio->DATALEN != sizeof(Command)) {
-        Serial.print("Invalid Command received, not matching Command struct!");
+    if (radio->DATALEN != sizeof(TransportCmd)) {
+        Serial.print("Invalid Command received, not matching TransportCmd struct!");
         return 0;
     }
 
-    Serial.print('[');Serial.print(radio->SENDERID, DEC);Serial.print("] ");
-    Serial.print("   [RX_RSSI:");Serial.print(radio->readRSSI());Serial.print("]");
+    TransportCmd* data = (TransportCmd*)malloc(sizeof(TransportCmd));
+    NodeCmd* node_cmd = (NodeCmd*)malloc(sizeof(NodeCmd));
+    memcpy(data, (const void*)radio->DATA, sizeof(TransportCmd));
 
-    Command* data = (Command*)malloc(sizeof(Command));
-    memcpy(data, (const void*)radio->DATA, sizeof(Command));
+    node_cmd->cmd = data;
+    node_cmd->node_id = radio->SENDERID;
+    node_cmd->rssi = radio->readRSSI();
 
     if (radio->ACKRequested())
     {
@@ -48,16 +50,53 @@ Command* get_message(RFM69* radio) {
         Serial.print(" - ACK sent.");
     }
 
-    return data;
+    return node_cmd;
+}
+
+void del_cmd(TransportCmd* cmd) {
+    if(cmd != 0) {
+        delete(cmd);
+    }
+}
+
+void del_cmd(NodeCmd* cmd) {
+    if(cmd == 0) {
+        return;
+    }
+
+    if(cmd->cmd != 0) {
+        delete(cmd->cmd);
+    }
+
+    delete(cmd);
 }
 
 
-void send_message(RFM69* radio, int target, Command* data) {
-    if (radio->sendWithRetry(target, (const void*)(data), sizeof(*data))) {
+bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) {
+    TransportCmd cmd;
+    cmd.command = cmd_code;
+    strcpy(cmd.payload, payload);
+
+    if (radio->sendWithRetry(target, (const void*)(&cmd), sizeof(cmd)), SEND_NUM_RETRIES) {
         return true;
     }
 
     return false;
+}
+
+
+void print_command(NodeCmd* cmd) {
+    Serial.print(" nodeId=");
+    Serial.print(cmd->node_id);
+
+    Serial.print(" rssi=");
+    Serial.print(cmd->rssi);
+
+    Serial.print(" command=");
+    Serial.print((char)cmd->cmd->command);
+
+    Serial.print(" payload=");
+    Serial.println(cmd->cmd->payload);
 }
 
 #endif
