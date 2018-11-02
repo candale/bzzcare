@@ -4,6 +4,8 @@
 
 #include "utils.h"
 
+float FLOAT_ERR = 1111.11;
+
 
 RFM69* make_radio() {
     RFM69 * radio = new RFM69();
@@ -82,6 +84,49 @@ bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) 
     }
 
     return false;
+}
+
+
+/*
+Transform a float in it's string representation
+If the value is 0, the string "zero" will be put in buff.
+*/
+void zftoa(float value, char* buff) {
+    if(value == 0) {
+        strcpy(buff, "zero");
+    } else {
+        sprintf(buff, "%.2f", value);
+    }
+}
+
+
+/*
+Try and transform a string into a float number.
+When the string "zero" is met, it is interpreted as the number 0.
+This is so to not confuse the 0 return value of atof, which is an error.
+*/
+void zatof(char* buff, float* value) {
+    if(strcmp(buff, "zero") == 0) {
+        *value = 0;
+        return;
+    }
+
+    float parsed_value = atof(buff);
+    if(parsed_value == 0) {
+        Serial.println("ERROR: payload could not be interpreted");
+        *value = FLOAT_ERR;
+        return;
+    }
+
+    *value = parsed_value;
+}
+
+
+bool send_message(RFM69* radio, int target, byte cmd_code, float payload) {
+    char buff[8];
+    zftoa(payload, buff);
+
+    return send_message(radio, target, cmd_code, buff);
 }
 
 

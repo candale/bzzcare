@@ -14,8 +14,7 @@
 #define CMD_REPORT_CAPABILITIES 2
 #define CMD_TEST_ACK 3
 
-typedef void sys_cmd_function(NodeCmd*, RFM69*);
-typedef void cmd_function(NodeCmd*);
+typedef void cmd_function(NodeCmd*, RFM69*);
 
 // == USER DEFINED COMMANDS ==
 
@@ -32,7 +31,7 @@ I guess this could be a model. Update as necessary.
 #define CMD_PID_CONF 20
 
 // Temperature setting
-#define CMD_TEMP 21
+#define CMD_SETPOINT 21
 
 
 extern const cmd_function* CMD_MAP [];

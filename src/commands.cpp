@@ -20,7 +20,7 @@ void cmd_test_ack(NodeCmd* cmd, RFM69* radio) {
 }
 
 
-const sys_cmd_function* SYS_CMD_MAP [] = {
+const cmd_function* SYS_CMD_MAP [] = {
     &cmd_reboot,
     &cmd_report_capabilities,
     &cmd_test_ack,
@@ -30,32 +30,23 @@ const sys_cmd_function* SYS_CMD_MAP [] = {
 
 const cmd_function* CMD_MAP [] = {
     &cmd_pid_conf,
-    &cmd_temp,
+    &cmd_setpoint,
     0
 };
 
 
 void route_cmd(NodeCmd* cmd, RFM69* radio) {
+    cmd_function** commands;
     if(cmd->cmd->command <= SYS_MAX_CMD) {
-        byte index = 0;
-        sys_cmd_function* func = 0;
-        do {
-            func = SYS_CMD_MAP[index];
-            index += 1;
-        } while(func != 0 && index != cmd->cmd->command);
-
-        if(func == 0) {
-            Serial.print("ERROR: Cannot find SYS function with code: ");
-            Serial.println(cmd->cmd->command, DEC);
-            return;
-        }
-        func(cmd, radio);
+        commands = SYS_CMD_MAP;
+    } else {
+        commands = CMD_MAP;
     }
 
     cmd_function* func = 0;
     byte index = 0;
     do{
-        func = CMD_MAP[index];
+        func = commands[index];
         index += 1;
     } while (func != 0 && index != cmd->cmd->command);
 
@@ -65,7 +56,7 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
         return;
     }
 
-    func(cmd);
+    func(cmd, radio);
 }
 
 #endif

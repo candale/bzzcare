@@ -14,4 +14,9 @@ void del_cmd(NodeCmd* cmd);
 void print_command(NodeCmd* cmd);
 
 
+extern float FLOAT_ERR;
+void zftoa(float value, char* buff);
+void zatof(char* buff, float* value);
+
+
 #endif

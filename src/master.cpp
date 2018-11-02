@@ -25,12 +25,20 @@ void handle(RFM69* radio) {
 }
 
 
-void cmd_pid_conf(NodeCmd* cmd) {
+void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
 
 }
 
-void cmd_temp(NodeCmd* cmd) {
 
+void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
+    float value;
+    zatof(cmd->cmd->payload, &value);
+    if(value == FLOAT_ERR) {
+        Serial.println("ERROR: got bad float");
+    }
+
+    Serial.print("Got setpoint from someone: ");
+    Serial.println(value);
 }
 
 

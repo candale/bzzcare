@@ -33,12 +33,24 @@ void handle(RFM69* radio) {
 }
 
 
-void cmd_pid_conf(NodeCmd* cmd) {
+void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
 
 }
 
-void cmd_temp(NodeCmd* cmd) {
 
+void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
+    // respond with current state
+    if(strcmp(cmd->cmd->payload, "REQ") == 0) {
+        send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
+        return;
+    }
+
+    float value;
+    zatof(cmd->cmd->payload, &value);
+    if(value == FLOAT_ERR) {
+        return;
+    }
+    current_state.setpoint = value;
 }
 
 
