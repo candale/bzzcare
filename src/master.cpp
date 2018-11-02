@@ -1,3 +1,4 @@
+#ifdef ROLE_MASTER
 #ifndef MASTER_CPP
 #define MASTER_CPP
 
@@ -13,4 +14,14 @@ void handle(RFM69* radio) {
 }
 
 
+void cmd_pid_conf(NodeCmd* cmd) {
+
+}
+
+void cmd_temp(NodeCmd* cmd) {
+
+}
+
+
+#endif
 #endif

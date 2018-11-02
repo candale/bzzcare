@@ -1,3 +1,4 @@
+#ifdef ROLE_SLAVE
 #ifndef SLAVE_H
 #define SLAVE_H
 
@@ -9,5 +10,8 @@
 
 
 void handle(RFM69* radio);
+void cmd_pid_conf(NodeCmd* cmd);
+void cmd_temp(NodeCmd* cmd);
 
+#endif
 #endif
