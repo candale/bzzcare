@@ -5,6 +5,7 @@
 #include <RFM69.h>
 #include "config.h"
 #include "utils.h"
+#include "commands.h"
 
 void handle(RFM69* radio);
 void cmd_pid_conf(NodeCmd* cmd);
