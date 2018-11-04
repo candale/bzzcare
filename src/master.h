@@ -11,5 +11,7 @@ void handle(RFM69* radio);
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio);
 void cmd_setpoint(NodeCmd* cmd, RFM69* radio);
 
+extern const void* SERIAL_CMD_MAP [];
+
 #endif
 #endif

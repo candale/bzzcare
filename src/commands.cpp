@@ -20,30 +20,30 @@ void cmd_test_ack(NodeCmd* cmd, RFM69* radio) {
 }
 
 
-const cmd_function* SYS_CMD_MAP [] = {
-    &cmd_reboot,
-    &cmd_report_capabilities,
-    &cmd_test_ack,
+const cmd_function SYS_CMD_MAP [] = {
+    cmd_reboot,
+    cmd_report_capabilities,
+    cmd_test_ack,
     0
 };
 
 
-const cmd_function* CMD_MAP [] = {
-    &cmd_pid_conf,
-    &cmd_setpoint,
+const cmd_function CMD_MAP [] = {
+    cmd_pid_conf,
+    cmd_setpoint,
     0
 };
 
 
 void route_cmd(NodeCmd* cmd, RFM69* radio) {
-    cmd_function** commands;
+    const cmd_function* commands;
     if(cmd->cmd->command <= SYS_MAX_CMD) {
         commands = SYS_CMD_MAP;
     } else {
         commands = CMD_MAP;
     }
 
-    cmd_function* func = 0;
+    cmd_function func = 0;
     byte index = 0;
     do{
         func = commands[index];
@@ -58,5 +58,11 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
 
     func(cmd, radio);
 }
+
+
+void route_serial_cmd(void** cmd_map, char* payload) {
+
+}
+
 
 #endif

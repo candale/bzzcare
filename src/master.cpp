@@ -5,6 +5,38 @@
 #include "master.h"
 
 
+/*
+For each serial command, define a command name and a command function.
+Assign the command function to another name: prepend the original name
+with cmd_. We do this to ensure that we catch any function type errors
+at compile time rather than runtime. Well...warnings, not errors. Maybe
+play with -fpermissive.
+*/
+const char* SERIAL_SETPOINT = "setpoint";
+const char* SERIAL_PID_CONF = "pid";
+
+void serial_setpoint(char** payload) {
+
+}
+
+void serial_pid_conf(char** payload) {
+
+}
+
+
+serial_function cmd_serial_setpoint = &serial_setpoint;
+serial_function cmd_serial_pid_conf = &serial_pid_conf;
+
+const void* SERIAL_CMD_MAP [] = {
+    (void*)SERIAL_SETPOINT,
+    (void*)cmd_serial_setpoint,
+
+    (void*)SERIAL_PID_CONF,
+    (void*)cmd_serial_pid_conf,
+    0
+};
+
+
 void do_specific_work(RFM69* radio, NodeCmd* data) {
 
 }
