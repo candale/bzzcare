@@ -15,12 +15,39 @@ play with -fpermissive.
 const char* SERIAL_SETPOINT = "setpoint";
 const char* SERIAL_PID_CONF = "pid";
 
-void serial_setpoint(char** payload) {
+void serial_pid_conf(RFM69* radio, char* command) {
+    Serial.println("Executing serial setpoint command");
+
 
 }
 
-void serial_pid_conf(char** payload) {
 
+void serial_setpoint(RFM69* radio, char* command) {
+    Serial.println("Executing serial PID conf command");
+    char command_details[3][20];
+    int num_columns = break_command(command, command_details, 3);
+    if(num_columns != 3) {
+        Serial.print("ERROR: Expected 3 command columns. Got "); Serial.println(num_columns);
+        return;
+    }
+
+    int target_ = atoi(command_details[1]);
+    if(target_ < 2 || target_ > 255) {
+        Serial.println("ERROR: Second argument (target) must an int [2,255]");
+        return;
+    }
+    byte target = target_;
+
+    float setpoint;
+    zatof(command_details[2], &setpoint);
+    if(setpoint == FLOAT_ERR) {
+        Serial.println("ERROR: Third argument must be a float");
+        return;
+    }
+
+    Serial.print("Updating setpoint. Target: "); Serial.print(target);
+    Serial.print(" Setpoint: "); Serial.println(setpoint);
+    cmd_setpoint(radio, target, setpoint);
 }
 
 
@@ -38,8 +65,31 @@ const void* SERIAL_CMD_MAP [] = {
 
 
 void do_specific_work(RFM69* radio, NodeCmd* data) {
+    if(Serial.available() > 0) {
+        char command[50];
+        // TODO: move this logic into anther function
+        byte index = 0;
+        while(index < 49) {
+            byte c = Serial.read();
+            if(c == '\n') {
+                break;
+            }
 
+            command[index++] = c;
+            // it appears we need this to get the serial uninterrupted
+            delayMicroseconds(100);
+        }
+        command[index] = 0;
+        Serial.print("Got command: "); Serial.println(command);
+
+        serial_function func = get_serial_cmd(SERIAL_CMD_MAP, command);
+        if(func != 0) {
+            func(radio, command);
+        }
+
+    }
 }
+
 
 
 void handle(RFM69* radio) {
@@ -71,6 +121,15 @@ void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
 
     Serial.print("Got setpoint from someone: ");
     Serial.println(value);
+}
+
+
+void cmd_setpoint(RFM69* radio, byte target, float setpoint) {
+    if(send_message(radio, target, CMD_SETPOINT, setpoint) == true) {
+        Serial.println("Updated setpoint successfully.");
+    } else {
+        Serial.println("Failed to update setpoint");
+    }
 }
 
 

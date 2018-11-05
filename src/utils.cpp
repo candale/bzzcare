@@ -87,6 +87,15 @@ bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) 
 }
 
 
+bool send_message(RFM69* radio, int target, byte cmd_code, float payload) {
+    char buff[8];
+    zftoa(payload, buff);
+
+    return send_message(radio, target, cmd_code, buff);
+}
+
+
+
 /*
 Transform a float in it's string representation
 If the value is 0, the string "zero" will be put in buff.
@@ -122,11 +131,20 @@ void zatof(char* buff, float* value) {
 }
 
 
-bool send_message(RFM69* radio, int target, byte cmd_code, float payload) {
-    char buff[8];
-    zftoa(payload, buff);
-
-    return send_message(radio, target, cmd_code, buff);
+int read_from_serial(char* buff, int max_length) {
+    // TODO: figure out why this doesn't work
+    int index = 0;
+    if(Serial.available() > 0) {
+        while(index < max_length - 1) {
+            byte c = Serial.read();
+            if(c == '\n') {
+                break;
+            }
+            buff[index++] = c;
+        }
+        buff[index] = 0;
+    }
+    return index;
 }
 
 

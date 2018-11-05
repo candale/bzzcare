@@ -59,9 +59,53 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
     func(cmd, radio);
 }
 
+/*
+Break a semi-colon separated string into an array of char arrays.
+We assume that a single command element cannot be more than 20 characters
+Maybe we should be a bit more conservative than that.
+*/
+byte break_command(const char* command, char container[][20], int take_only) {
+    int len = strlen(command) + 1;
+    char command_cpy[len];
+    strcpy(command_cpy, command);
+    command_cpy[len - 1] = 0;
 
-void route_serial_cmd(void** cmd_map, char* payload) {
+    byte num_tokens = 0;
+    char* token = strtok(command_cpy, ";");
+    while(token != NULL && num_tokens != take_only) {
+        strncpy(container[num_tokens++], token, 20);
+        token = strtok(NULL, ";");
+    }
 
+    return num_tokens;
+}
+
+serial_function get_serial_cmd(const void** cmd_map, char* command) {
+    char command_id_[1][20];
+    char* command_id = 0;
+    if(break_command(command, command_id_, 1) != 1) {
+        Serial.println("ERROR: Expected one command at the beginning but none was found.");
+    }
+
+    command_id = (char*)command_id_[0];
+
+    serial_function func = 0;
+    byte index = 0;
+    while(cmd_map[index] != 0) {
+        if(strcmp((char*)cmd_map[index], command_id) == 0) {
+            func = (serial_function)cmd_map[index + 1];
+            Serial.println("Found function to execute.");
+            break;
+        }
+        index += 2;
+    }
+
+    if(func == 0) {
+        Serial.println("Could not find function.");
+        return 0;
+    }
+
+    return func;
 }
 
 

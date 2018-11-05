@@ -15,7 +15,7 @@
 #define CMD_TEST_ACK 3
 
 typedef void (*cmd_function)(NodeCmd*, RFM69*);
-typedef void (*serial_function)(char**);
+typedef void (*serial_function)(RFM69*, char*);
 
 // == USER DEFINED COMMANDS ==
 
@@ -67,7 +67,9 @@ The array must terminate in a null pointer.
 
 The second parameter is the actual string received from serial.
 */
-void route_serial_cmd(void** cmd_map, char* payload);
+serial_function get_serial_cmd(const void** cmd_map, char* payload);
+
+byte break_command(const char* command, char container[][20], int take_only);
 
 
 #endif
