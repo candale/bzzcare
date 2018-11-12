@@ -4,7 +4,7 @@
 
 #include "utils.h"
 
-float FLOAT_ERR = 1111.11;
+double DOUBLE_ERR = 1111.11;
 
 
 RFM69* make_radio() {
@@ -26,7 +26,7 @@ RFM69* make_radio() {
     return radio;
 }
 
-NodeCmd* get_message(RFM69* radio) {
+NodeCmd* get_message(RFM69* radio, bool reply_to_ack_request) {
     if(radio->receiveDone() == false) {
         return 0;
     }
@@ -45,15 +45,26 @@ NodeCmd* get_message(RFM69* radio) {
     node_cmd->cmd = data;
     node_cmd->node_id = radio->SENDERID;
     node_cmd->rssi = radio->readRSSI();
+    node_cmd->ack_requested = radio->ACKRequested();
 
-    if (radio->ACKRequested())
+    if (node_cmd->ack_requested && reply_to_ack_request)
     {
         radio->sendACK();
-        Serial.print(" - ACK sent.");
     }
 
     return node_cmd;
 }
+
+
+NodeCmd* get_message_without_ack(RFM69* radio) {
+    return get_message(radio, false);
+}
+
+
+NodeCmd* get_message_with_ack(RFM69* radio) {
+    return get_message(radio, true);
+}
+
 
 void del_cmd(TransportCmd* cmd) {
     if(cmd != 0) {
@@ -79,15 +90,17 @@ bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) 
     cmd.command = cmd_code;
     strcpy(cmd.payload, payload);
 
-    if (radio->sendWithRetry(target, (const void*)(&cmd), sizeof(cmd)), SEND_NUM_RETRIES) {
+    if (radio->sendWithRetry(target, (const void*)(&cmd), sizeof(cmd), SEND_NUM_RETRIES)) {
+        Serial.println("Send with success");
         return true;
     }
 
+    Serial.println("Failure in sending.");
     return false;
 }
 
 
-bool send_message(RFM69* radio, int target, byte cmd_code, float payload) {
+bool send_message(RFM69* radio, int target, byte cmd_code, double payload) {
     char buff[8];
     zftoa(payload, buff);
 
@@ -97,33 +110,33 @@ bool send_message(RFM69* radio, int target, byte cmd_code, float payload) {
 
 
 /*
-Transform a float in it's string representation
+Transform a double in it's string representation
 If the value is 0, the string "zero" will be put in buff.
 */
-void zftoa(float value, char* buff) {
+void zftoa(double value, char* buff) {
     if(value == 0) {
         strcpy(buff, "zero");
     } else {
-        sprintf(buff, "%.2f", value);
+        dtostrf(value, 3, 2, buff);
     }
 }
 
 
 /*
-Try and transform a string into a float number.
+Try and transform a string into a double number.
 When the string "zero" is met, it is interpreted as the number 0.
 This is so to not confuse the 0 return value of atof, which is an error.
 */
-void zatof(char* buff, float* value) {
+void zatof(char* buff, double* value) {
     if(strcmp(buff, "zero") == 0) {
         *value = 0;
         return;
     }
 
-    float parsed_value = atof(buff);
+    double parsed_value = atof(buff);
     if(parsed_value == 0) {
         Serial.println("ERROR: payload could not be interpreted");
-        *value = FLOAT_ERR;
+        *value = DOUBLE_ERR;
         return;
     }
 
@@ -149,6 +162,9 @@ int read_from_serial(char* buff, int max_length) {
 
 
 void print_command(NodeCmd* cmd) {
+    Serial.print("rssi= ");
+    Serial.print(cmd->rssi);
+
     Serial.print(" nodeId=");
     Serial.print(cmd->node_id);
 

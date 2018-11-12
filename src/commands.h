@@ -10,6 +10,7 @@
 // == SYSTEM RESERVED COMMANDS | FIRST 19 ==
 
 #define SYS_MAX_CMD 19
+#define USER_CMD_START 20
 #define CMD_REBOOT 1
 #define CMD_REPORT_CAPABILITIES 2
 #define CMD_TEST_ACK 3
@@ -40,8 +41,13 @@ Both master and slave implement the same exact set of commands. Slave commands
 have the responsibility  of changing and reporting the device state.
 The master acts only as a proxy. This is why it implements all the commands
 of the slave: every command issued to or from a slave must be routed
-to the slave or back to the serial command. Depending on the direction, the
-master will call a different command?
+to the slave or back to the serial command.
+Depending on the direction, the master will call the same command but with
+different arguments: when it goes from serial to slave we call the command with
+the arguments necessary to build the command and the function is responsible of
+building and sending the command; when it comes from the slave to the master
+the function receives a NodeCmd and the function is responsible of interpreting
+the payload and forwarding up through the serial.
 
 example:
 void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {

@@ -16,6 +16,7 @@ RFM69* radio;
 void setup() {
     Serial.begin(SERIAL_BAUD);
     radio = make_radio();
+    device_setup(radio);
 }
 
 void loop() {

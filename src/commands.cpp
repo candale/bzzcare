@@ -37,9 +37,12 @@ const cmd_function CMD_MAP [] = {
 
 void route_cmd(NodeCmd* cmd, RFM69* radio) {
     const cmd_function* commands;
+    Serial.print("Routing command: "); Serial.println(cmd->cmd->command);
     if(cmd->cmd->command <= SYS_MAX_CMD) {
+        Serial.println("Choosing sys CMD map");
         commands = SYS_CMD_MAP;
     } else {
+        Serial.println("Choosing user CMD map");
         commands = CMD_MAP;
     }
 
@@ -48,7 +51,7 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
     do{
         func = commands[index];
         index += 1;
-    } while (func != 0 && index != cmd->cmd->command);
+    } while (func != 0 && index - 1 != cmd->cmd->command - USER_CMD_START);
 
     if(func == 0) {
         Serial.print("ERROR: Cannot find USER function with code: ");
@@ -56,6 +59,7 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
         return;
     }
 
+    Serial.print("Calling found function for cmd "); Serial.println(cmd->cmd->command);
     func(cmd, radio);
 }
 

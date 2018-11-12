@@ -51,6 +51,7 @@ the node and strength of the signal
 */
 typedef struct {
     TransportCmd* cmd;
+    bool ack_requested;
     int node_id;
     int rssi;
 } NodeCmd;
@@ -66,11 +67,18 @@ typedef struct {
 
 // When this is a master, NODEID must always be 1
 #ifdef ROLE_MASTER
-    #define NODEID 1
+    #if NODEID != 1
+        #error "When role is master, NODEID must be 1"
+    #endif
 #elif defined ROLE_SLAVE
     // When this is a slave, must always be 1
-    #define NODEID 99
-    #define GATEWAYID
+    #if NODEID == 1
+        #error "When role is slave, NODEID must not be 1"
+    #endif
+
+    #if GATEWAYID != 1
+        #error "When role is slave, GATEWAYID must be 1"
+    #endif
 #else
     #error "You must define this as either ROLE_MASTER or ROLE_SLAVE"
 #endif
