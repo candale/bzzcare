@@ -6,6 +6,7 @@
 #include "config.h"
 #include "utils.h"
 #include "commands.h"
+#include "serial_commands.h"
 
 void handle(RFM69* radio);
 void device_setup(RFM69* radio);

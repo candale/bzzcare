@@ -41,7 +41,7 @@ void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
 
 void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
     // respond with current state
-    Serial.println("Setting setpoint");
+    // Serial.println("Setting setpoint");
     if(strcmp(cmd->cmd->payload, "REQ") == 0) {
         send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
         return;
@@ -50,11 +50,11 @@ void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
     double value;
     zatof(cmd->cmd->payload, &value);
     if(value == DOUBLE_ERR) {
-        Serial.println("Error interpreting setpoint");
+        // Serial.println("Error interpreting setpoint");
         return;
     }
     current_state.setpoint = value;
-    Serial.print("Set setpoint to: "); Serial.println(value);
+    // Serial.print("Set setpoint to: "); Serial.println(value);
 
     send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
 }

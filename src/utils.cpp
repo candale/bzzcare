@@ -91,11 +91,11 @@ bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) 
     strcpy(cmd.payload, payload);
 
     if (radio->sendWithRetry(target, (const void*)(&cmd), sizeof(cmd), SEND_NUM_RETRIES)) {
-        Serial.println("Send with success");
+        // Serial.println("Send with success");
         return true;
     }
 
-    Serial.println("Failure in sending.");
+    // Serial.println("Failure in sending.");
     return false;
 }
 
@@ -135,7 +135,7 @@ void zatof(char* buff, double* value) {
 
     double parsed_value = atof(buff);
     if(parsed_value == 0) {
-        Serial.println("ERROR: payload could not be interpreted");
+        // Serial.println("ERROR: payload could not be interpreted");
         *value = DOUBLE_ERR;
         return;
     }

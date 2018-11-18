@@ -28,6 +28,7 @@ All of these commands should have their meaning based on the direction:
 
 I guess this could be a model. Update as necessary.
 */
+extern char CMD_REQ [];
 
 // Temperature PID settings
 #define CMD_PID_CONF 20
@@ -42,24 +43,6 @@ have the responsibility  of changing and reporting the device state.
 The master acts only as a proxy. This is why it implements all the commands
 of the slave: every command issued to or from a slave must be routed
 to the slave or back to the serial command.
-Depending on the direction, the master will call the same command but with
-different arguments: when it goes from serial to slave we call the command with
-the arguments necessary to build the command and the function is responsible of
-building and sending the command; when it comes from the slave to the master
-the function receives a NodeCmd and the function is responsible of interpreting
-the payload and forwarding up through the serial.
-
-example:
-void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
-    // this is used to receive the command and forward it upstream, to serial
-}
-
-void cmd_setpoint(byte target, float setpoint) {
-    // this is used to send the command to a slave
-}
-
-We can use function overloading to achieve this goal.
-TODO: is this a sane solution?
 */
 extern const cmd_function CMD_MAP [];
 void route_cmd(NodeCmd* cmd, RFM69* radio);
