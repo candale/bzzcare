@@ -12,7 +12,10 @@ void set_setpoint(RFM69* radio, byte target, double setpoint);
 void request_setpoint(RFM69* radio, byte target);
 
 void serial_pid_conf(RFM69* radio, char* command);
+void serial_report_pid_conf(NodeCmd* cmd);
+
 void serial_setpoint(RFM69* radio, char* command);
+void serial_report_setpoint(NodeCmd* cmd);
 
 
 extern const void* SERIAL_CMD_MAP [];

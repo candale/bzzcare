@@ -26,6 +26,7 @@ RFM69* make_radio() {
     return radio;
 }
 
+
 NodeCmd* get_message(RFM69* radio, bool reply_to_ack_request) {
     if(radio->receiveDone() == false) {
         return 0;
@@ -71,6 +72,7 @@ void del_cmd(TransportCmd* cmd) {
         delete(cmd);
     }
 }
+
 
 void del_cmd(NodeCmd* cmd) {
     if(cmd == 0) {

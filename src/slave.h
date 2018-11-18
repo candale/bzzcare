@@ -6,20 +6,18 @@
 #include "config.h"
 #include "utils.h"
 #include "commands.h"
+#include "common.h"
 
 #define TRANSMITPERIOD 1000
-#define PID_DEFAULT_KP
 
 #define PID_DEFAULT    4
-#define INIT_KP          2
-#define INIT_KI          0.005
-#define INIT_KD          2
+#define INIT_KP        2
+#define INIT_KI        0.005
+#define INIT_KD        2
 
 
 typedef struct {
-    double kp;
-    double ki;
-    double kd;
+    PIDConf* pid_conf;
 
     double setpoint;
     double output;

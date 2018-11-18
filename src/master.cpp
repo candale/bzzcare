@@ -71,19 +71,12 @@ void device_setup(RFM69* radio) {
 
 
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
-
+    serial_report_pid_conf(cmd);
 }
 
 
 void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
-    double value;
-    zatof(cmd->cmd->payload, &value);
-    if(value == DOUBLE_ERR) {
-        // Serial.println("ERROR: got bad double");
-    }
-
-    // Serial.print("Got setpoint from someone: ");
-    Serial.println(value);
+    serial_report_setpoint(cmd);
 }
 
 

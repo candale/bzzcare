@@ -67,7 +67,7 @@ byte break_command(const char* command, char container[][20], int take_only) {
     byte num_tokens = 0;
     char* token = strtok(command_cpy, ";");
     while(token != NULL && num_tokens != take_only) {
-        strncpy(container[num_tokens++], token, 20);
+        strncpy(container[num_tokens++], token, 10);
         token = strtok(NULL, ";");
     }
 
@@ -100,6 +100,15 @@ serial_function get_serial_cmd(const void** cmd_map, char* command) {
     }
 
     return func;
+}
+
+byte parse_target(const char* target_str) {
+    int target = atoi(target_str);
+    if(target < 2 || target > 255) {
+        // Serial.println("ERROR: Second argument (target) must an int [2,255]");
+        return;
+    }
+    return (byte)target;
 }
 
 

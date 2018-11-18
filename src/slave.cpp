@@ -30,12 +30,17 @@ void handle(RFM69* radio) {
 
 
 void device_setup(RFM69* radio) {
-
+    current_state.pid_conf = malloc(sizeof(PIDConf));
+    current_state.pid_conf->kp = INIT_KP;
+    current_state.pid_conf->ki = INIT_KI;
+    current_state.pid_conf->kd = INIT_KD;
+    current_state.setpoint = 5;
+    current_state.output = 0;
 }
 
 
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
-
+    update_pid_conf_from_str(cmd->cmd->payload, current_state->pid_conf)
 }
 
 
