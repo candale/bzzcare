@@ -47,11 +47,15 @@ void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
     if(strcmp((char*)cmd->cmd->payload, CMD_REQ) == 0) {
         send_message(
             radio, GATEWAYID, CMD_PID_CONF,
-            (byte*)current_state.pid_conf, sizeof(current_state.pid_conf)
+            (byte*)current_state.pid_conf, sizeof(PIDConf)
         );
     } else {
         PIDConf pid_conf;
         memcpy(&pid_conf, cmd->cmd->payload, sizeof(pid_conf));
+        Serial.print("kp: "); Serial.println(pid_conf.kp);
+        Serial.print("ki: "); Serial.println(pid_conf.ki);
+        Serial.print("kd: "); Serial.println(pid_conf.kd);
+        Serial.print("setpoint: "); Serial.println(pid_conf.setpoint);
         if(pid_conf.control != PID_CONF_CONTROL) {
             Serial.println("Got pid conf with bad control");
             Serial.println(pid_conf.control);

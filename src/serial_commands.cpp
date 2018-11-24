@@ -98,13 +98,9 @@ void serial_pid_conf(RFM69* radio, char* command) {
     }
 
     PIDConf pid_conf;
-    pid_conf.control = PID_CONF_CONTROL;
+    init_pid_conf(&pid_conf);
 
     update_pid_conf_from_str(start_of_payload, &pid_conf);
-    Serial.println("Updating slave with pid conf");
-    Serial.print("Size of PIDConf: "); Serial.println(sizeof(PIDConf));
-    Serial.println("Size of pid_conf: "); Serial.println(sizeof(pid_conf));
-    Serial.print("Control of struct is: "); Serial.println(pid_conf.control);
     send_message(radio, target, CMD_PID_CONF, (byte *)&pid_conf, sizeof(pid_conf));
 }
 
@@ -118,15 +114,16 @@ void serial_report_pid_conf(NodeCmd* cmd) {
     }
 
     char data[120];
-    char kp[10], ki[10], kd[10], ks[10];
+    char kp[10], ki[10], kd[10], ks[10], err[10];
     dtostrf(reported_pid_conf.kp, 3, 2, kp);
     dtostrf(reported_pid_conf.ki, 3, 2, ki);
     dtostrf(reported_pid_conf.kd, 3, 2, kd);
+    dtostrf(reported_pid_conf.err, 3, 2, err);
     dtostrf(reported_pid_conf.setpoint, 3, 2, ks);
     sprintf(
-        data, "%s;%u;%d;kp=%s;ki=%s;kd=%s;kw=%d;ks=%s;ko=%s",
+        data, "%s;%u;%d;kp=%s;ki=%s;kd=%s;kw=%d;ks=%s;err=%s;ko=%s",
         SERIAL_PID_CONF, cmd->node_id, cmd->rssi,
-        kp, ki, kd, reported_pid_conf.window_size, ks,
+        kp, ki, kd, reported_pid_conf.window_size, ks, err,
         reported_pid_conf.output == 1 ? "on" : "off"
     );
     Serial.println(data);
