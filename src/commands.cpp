@@ -84,10 +84,11 @@ serial_function get_serial_cmd(const void** cmd_map, char* command) {
 
 byte parse_target(const char* target_str) {
     int target = atoi(target_str);
-    if(target < 2 || target > 255) {
-        // Serial.println("ERROR: Second argument (target) must an int [2,255]");
+    if(target > 255 || target == NODEID) {
+        // Serial.println("Target must be a value in interval [1,255] but not the self nodeid");
         return 0;
     }
+
     return (byte)target;
 }
 

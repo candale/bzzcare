@@ -6,17 +6,14 @@
 #include "commands.h"
 #include "common.h"
 
-extern const char* SERIAL_SETPOINT;
 extern const char* SERIAL_PID_CONF;
-
-void set_setpoint(RFM69* radio, byte target, double setpoint);
-void request_setpoint(RFM69* radio, byte target);
 
 void serial_pid_conf(RFM69* radio, char* command);
 void serial_report_pid_conf(NodeCmd* cmd);
+void pid_conf_set(RFM69* radio, byte target, const char* pid_conf_data);
+void pid_conf_request(RFM69* radio, byte target);
+char* get_after_command_and_target(const char* command);
 
-void serial_setpoint(RFM69* radio, char* command);
-void serial_report_setpoint(NodeCmd* cmd);
 
 
 extern const void* SERIAL_CMD_MAP [];

@@ -4,7 +4,6 @@
 #include "serial_commands.h"
 
 
-const char* SERIAL_SETPOINT = "setpoint";
 const char* SERIAL_PID_CONF = "pid";
 
 
@@ -16,35 +15,65 @@ at compile time rather than runtime. Well...warnings, not errors. Maybe
 play with -fpermissive.
 */
 void serial_pid_conf(RFM69* radio, char* command);
-void serial_setpoint(RFM69* radio, char* command);
 
 
-serial_function cmd_serial_setpoint = serial_setpoint;
 serial_function cmd_serial_pid_conf = serial_pid_conf;
 
 
 // Commands that get executed from serial input
 const void* SERIAL_CMD_MAP [] = {
-    (void*)SERIAL_SETPOINT,
-    (void*)cmd_serial_setpoint,
-
     (void*)SERIAL_PID_CONF,
     (void*)cmd_serial_pid_conf,
     0
 };
 
 
-void set_setpoint(RFM69* radio, byte target, double setpoint) {
-    if(send_message(radio, target, CMD_SETPOINT, setpoint) == true) {
-        Serial.println("Updated setpoint successfully.");
-    } else {
-        Serial.println("Failed to update setpoint");
-    }
+/*
+Sent the pid conf represented by pid_conf_data to the device with node id
+target.
+pid_conf_data must be a string of the form "kp=10;kd=10;ki=10;ks=10;kw=10"
+with at least one parameter being specified
+*/
+void pid_conf_set(RFM69* radio, byte target, const char* pid_conf_data) {
+    PIDConf pid_conf;
+    init_pid_conf(&pid_conf);
+
+    update_pid_conf_from_str(pid_conf_data, &pid_conf);
+    send_message(radio, target, CMD_PID_CONF, (byte *)&pid_conf, sizeof(pid_conf));
 }
 
 
-void request_setpoint(RFM69* radio, byte target) {
-    send_message(radio, target, CMD_SETPOINT, CMD_REQ);
+/*
+Request pid config from device with node id target
+*/
+void pid_conf_request(RFM69* radio, byte target) {
+    send_message(radio, target, CMD_PID_CONF, CMD_REQ);
+}
+
+
+/*
+A command always has as the first two columns the command name and the
+target and then the payload follows.
+Return a pointer to the actual payload, skipping the comand and target.
+
+:return: pointer to start of payload or null pointer if no payload was found
+*/
+char* get_after_command_and_target(const char* command) {
+    // Skip over the command name and target and send the rest to the  slave device
+    char* start_of_payload = (char*)command;
+    byte number_of_smicolons = 0;
+    do {
+        if(*start_of_payload == ';') {
+            number_of_smicolons += 1;
+        }
+        start_of_payload += 1;
+    } while(number_of_smicolons != 2 && *start_of_payload != 0);
+
+    if(*start_of_payload == 0) {
+        Serial.println("Could not parse anything of value from serial");
+    }
+
+    return start_of_payload;
 }
 
 
@@ -73,35 +102,17 @@ void serial_pid_conf(RFM69* radio, char* command) {
     }
 
     if(strcmp(command_details[2], CMD_REQ) == 0) {
-        send_message(radio, target, CMD_PID_CONF, CMD_REQ);
+        pid_conf_request(radio, target);
         return;
     }
 
-    // Skip over the command name and target and send the rest to the  slave device
-    char* start_of_payload = command;
-    byte number_of_smicolons = 0;
-    do {
-        if(*start_of_payload == ';') {
-            number_of_smicolons += 1;
-        }
-        start_of_payload += 1;
-    } while(number_of_smicolons != 2 && *start_of_payload != 0);
-
-    if(*start_of_payload == 0) {
-        Serial.println("Could not parse anything of value from serial");
-        return;
-    }
-
-    if(strlen(start_of_payload) > PAYLOAD_SIZE - 1) {
+    char* cmd_payload = get_after_command_and_target(command);
+    if(cmd_payload == 0 || strlen(cmd_payload) > PAYLOAD_SIZE - 1) {
         Serial.println("err");
         return;
     }
 
-    PIDConf pid_conf;
-    init_pid_conf(&pid_conf);
-
-    update_pid_conf_from_str(start_of_payload, &pid_conf);
-    send_message(radio, target, CMD_PID_CONF, (byte *)&pid_conf, sizeof(pid_conf));
+    pid_conf_set(radio, target, cmd_payload);
 }
 
 
@@ -128,62 +139,6 @@ void serial_report_pid_conf(NodeCmd* cmd) {
     );
     Serial.println(data);
 }
-
-
-/*
-Interpret the serial command for setting/requesting the setpoint to/from
-a node.
-The command is as follows:
-- set: "setpoint;<target:byte>;<value:double>"
-- request: "setpoint;<target:byte>;req"
-*/
-void serial_setpoint(RFM69* radio, char* command) {
-    // Serial.println("Executing serial PID conf command");
-    char command_details[3][20];
-    int num_columns = break_command(command, command_details, 3);
-    if(num_columns != 3) {
-        // Serial.print("ERROR: Expected 3 command columns. Got "); Serial.println(num_columns);
-        return;
-    }
-
-    byte target = parse_target(command_details[1]);
-    if(target == 0) {
-        // Serial.println("Got bad target");
-        return;
-    }
-
-    if(strcmp(command_details[2], CMD_REQ) == 0) {
-        request_setpoint(radio, target);
-        return;
-    }
-
-    double setpoint;
-    zatof(command_details[2], &setpoint);
-    if(setpoint == DOUBLE_ERR) {
-        // Serial.println("ERROR: Third argument must be a double");
-        return;
-    }
-
-    // Serial.print("Updating setpoint. Target: "); Serial.print(target);
-    // Serial.print(" Setpoint: "); Serial.println(setpoint);
-    set_setpoint(radio, target, setpoint);
-}
-
-
-// void serial_report_setpoint(NodeCmd* cmd) {
-//     double value;
-//     zatof(cmd->cmd->payload, &value);
-//     if(value == DOUBLE_ERR) {
-//         // Serial.println("ERROR: got bad double");
-//         return;
-//     }
-
-//     // Serial.print("Got setpoint from someone: ");
-//     char data[20];
-//     sprintf(data, "%s;%u;%s;%d", SERIAL_SETPOINT, cmd->node_id, cmd->cmd->payload, cmd->rssi);
-//     Serial.println(data);
-// }
-
 
 
 #endif
