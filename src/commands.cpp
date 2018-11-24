@@ -18,7 +18,7 @@ const cmd_function SYS_CMD_MAP [] = {
 
 const cmd_function CMD_MAP [] = {
     cmd_pid_conf,
-    cmd_setpoint,
+    // cmd_setpoint,
     0
 };
 
@@ -53,26 +53,6 @@ void route_cmd(NodeCmd* cmd, RFM69* radio) {
     func(cmd, radio);
 }
 
-/*
-Break a semi-colon separated string into an array of char arrays.
-We assume that a single command element cannot be more than 20 characters
-Maybe we should be a bit more conservative than that.
-*/
-byte break_command(const char* command, char container[][20], int take_only) {
-    int len = strlen(command) + 1;
-    char command_cpy[len];
-    strcpy(command_cpy, command);
-    command_cpy[len - 1] = 0;
-
-    byte num_tokens = 0;
-    char* token = strtok(command_cpy, ";");
-    while(token != NULL && num_tokens != take_only) {
-        strncpy(container[num_tokens++], token, 10);
-        token = strtok(NULL, ";");
-    }
-
-    return num_tokens;
-}
 
 serial_function get_serial_cmd(const void** cmd_map, char* command) {
     char command_id_[1][20];
@@ -106,7 +86,7 @@ byte parse_target(const char* target_str) {
     int target = atoi(target_str);
     if(target < 2 || target > 255) {
         // Serial.println("ERROR: Second argument (target) must an int [2,255]");
-        return;
+        return 0;
     }
     return (byte)target;
 }

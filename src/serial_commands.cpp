@@ -8,19 +8,44 @@ const char* SERIAL_SETPOINT = "setpoint";
 const char* SERIAL_PID_CONF = "pid";
 
 
+/*
+For each serial command, define a command name and a command function.
+Assign the command function to another name: prepend the original name
+with cmd_. We do this to ensure that we catch any function type errors
+at compile time rather than runtime. Well...warnings, not errors. Maybe
+play with -fpermissive.
+*/
 void serial_pid_conf(RFM69* radio, char* command);
 void serial_setpoint(RFM69* radio, char* command);
+
+
+serial_function cmd_serial_setpoint = serial_setpoint;
+serial_function cmd_serial_pid_conf = serial_pid_conf;
 
 
 // Commands that get executed from serial input
 const void* SERIAL_CMD_MAP [] = {
     (void*)SERIAL_SETPOINT,
-    (void*)serial_setpoint,
+    (void*)cmd_serial_setpoint,
 
     (void*)SERIAL_PID_CONF,
-    (void*)serial_pid_conf,
+    (void*)cmd_serial_pid_conf,
     0
 };
+
+
+void set_setpoint(RFM69* radio, byte target, double setpoint) {
+    if(send_message(radio, target, CMD_SETPOINT, setpoint) == true) {
+        Serial.println("Updated setpoint successfully.");
+    } else {
+        Serial.println("Failed to update setpoint");
+    }
+}
+
+
+void request_setpoint(RFM69* radio, byte target) {
+    send_message(radio, target, CMD_SETPOINT, CMD_REQ);
+}
 
 
 /*
@@ -32,17 +57,27 @@ The command is as follows:
 - request: pid;<target:bytes>;req
 */
 void serial_pid_conf(RFM69* radio, char* command) {
-    // Serial.println("Executing serial setpoint command");
-    char command_details[2][20];
-    int num_columns = break_command(command, command_details, 2);
+    Serial.println("Executing serial pid command");
+    char command_details[3][20];
+    int num_columns = break_command(command, command_details, 3);
 
-    if(num_columns != 2) {
-        // Serial.println("At least two columns requires for pid conf");
+    if(num_columns != 3) {
+        Serial.println("At least three columns requires for pid conf");
         return;
     }
 
     byte target = parse_target(command_details[1]);
+    if(target == 0) {
+        Serial.println("Got bad target");
+        return;
+    }
 
+    if(strcmp(command_details[2], CMD_REQ) == 0) {
+        send_message(radio, target, CMD_PID_CONF, CMD_REQ);
+        return;
+    }
+
+    // Skip over the command name and target and send the rest to the  slave device
     char* start_of_payload = command;
     byte number_of_smicolons = 0;
     do {
@@ -53,30 +88,48 @@ void serial_pid_conf(RFM69* radio, char* command) {
     } while(number_of_smicolons != 2 && *start_of_payload != 0);
 
     if(*start_of_payload == 0) {
-        // Serial.println("Could not parse anything of value from serial");
+        Serial.println("Could not parse anything of value from serial");
         return;
     }
 
-    send_message(radio, target, CMD_PID_CONF, start_of_payload);
+    if(strlen(start_of_payload) > PAYLOAD_SIZE - 1) {
+        Serial.println("err");
+        return;
+    }
+
+    PIDConf pid_conf;
+    pid_conf.control = PID_CONF_CONTROL;
+
+    update_pid_conf_from_str(start_of_payload, &pid_conf);
+    Serial.println("Updating slave with pid conf");
+    Serial.print("Size of PIDConf: "); Serial.println(sizeof(PIDConf));
+    Serial.println("Size of pid_conf: "); Serial.println(sizeof(pid_conf));
+    Serial.print("Control of struct is: "); Serial.println(pid_conf.control);
+    send_message(radio, target, CMD_PID_CONF, (byte *)&pid_conf, sizeof(pid_conf));
 }
+
 
 void serial_report_pid_conf(NodeCmd* cmd) {
-    char data[50];
-    sprintf(data, "%s;%u;%s", SERIAL_PID_CONF, cmd->node_id, cmd->cmd->payload);
-}
-
-
-void set_setpoint(RFM69* radio, byte target, double setpoint) {
-    if(send_message(radio, target, CMD_SETPOINT, setpoint) == true) {
-        // Serial.println("Updated setpoint successfully.");
-    } else {
-        // Serial.println("Failed to update setpoint");
+    PIDConf reported_pid_conf;
+    memcpy(&reported_pid_conf, cmd->cmd->payload, sizeof(reported_pid_conf));
+    if(reported_pid_conf.control != PID_CONF_CONTROL) {
+        Serial.println("Got PID conf from slave with bad control number");
+        return;
     }
-}
 
-
-void request_setpoint(RFM69* radio, byte target) {
-    send_message(radio, target, CMD_SETPOINT, CMD_REQ);
+    char data[120];
+    char kp[10], ki[10], kd[10], ks[10];
+    dtostrf(reported_pid_conf.kp, 3, 2, kp);
+    dtostrf(reported_pid_conf.ki, 3, 2, ki);
+    dtostrf(reported_pid_conf.kd, 3, 2, kd);
+    dtostrf(reported_pid_conf.setpoint, 3, 2, ks);
+    sprintf(
+        data, "%s;%u;%d;kp=%s;ki=%s;kd=%s;kw=%d;ks=%s;ko=%s",
+        SERIAL_PID_CONF, cmd->node_id, cmd->rssi,
+        kp, ki, kd, reported_pid_conf.window_size, ks,
+        reported_pid_conf.output == 1 ? "on" : "off"
+    );
+    Serial.println(data);
 }
 
 
@@ -97,8 +150,12 @@ void serial_setpoint(RFM69* radio, char* command) {
     }
 
     byte target = parse_target(command_details[1]);
+    if(target == 0) {
+        // Serial.println("Got bad target");
+        return;
+    }
 
-    if(strcmp(command_details[1], CMD_REQ) == 0) {
+    if(strcmp(command_details[2], CMD_REQ) == 0) {
         request_setpoint(radio, target);
         return;
     }
@@ -116,19 +173,19 @@ void serial_setpoint(RFM69* radio, char* command) {
 }
 
 
-void serial_report_setpoint(NodeCmd* cmd) {
-    double value;
-    zatof(cmd->cmd->payload, &value);
-    if(value == DOUBLE_ERR) {
-        // Serial.println("ERROR: got bad double");
-        return;
-    }
+// void serial_report_setpoint(NodeCmd* cmd) {
+//     double value;
+//     zatof(cmd->cmd->payload, &value);
+//     if(value == DOUBLE_ERR) {
+//         // Serial.println("ERROR: got bad double");
+//         return;
+//     }
 
-    // Serial.print("Got setpoint from someone: ");
-    char data[20];
-    sprintf(data, "%s;%u;%s;%d", SERIAL_SETPOINT, cmd->node_id, cmd->cmd->payload, cmd->rssi);
-    Serial.println(data);
-}
+//     // Serial.print("Got setpoint from someone: ");
+//     char data[20];
+//     sprintf(data, "%s;%u;%s;%d", SERIAL_SETPOINT, cmd->node_id, cmd->cmd->payload, cmd->rssi);
+//     Serial.println(data);
+// }
 
 
 

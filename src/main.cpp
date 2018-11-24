@@ -15,6 +15,11 @@ RFM69* radio;
 
 void setup() {
     Serial.begin(SERIAL_BAUD);
+    #ifdef ROLE_MASTER
+        Serial.println("ME IS MASTER");
+    #elif defined ROLE_SLAVE
+        Serial.println("ME IS SLAVE");
+    #endif
     radio = make_radio();
     device_setup(radio);
 }

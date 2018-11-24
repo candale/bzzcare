@@ -30,39 +30,59 @@ void handle(RFM69* radio) {
 
 
 void device_setup(RFM69* radio) {
-    current_state.pid_conf = malloc(sizeof(PIDConf));
+    Serial.print("Size of PIDConf: ");Serial.println(sizeof(PIDConf));
+    current_state.pid_conf = (PIDConf*)malloc(sizeof(PIDConf));
+    current_state.pid_conf->control = PID_CONF_CONTROL;
+
     current_state.pid_conf->kp = INIT_KP;
     current_state.pid_conf->ki = INIT_KI;
     current_state.pid_conf->kd = INIT_KD;
-    current_state.setpoint = 5;
-    current_state.output = 0;
+    current_state.pid_conf->setpoint = 5;
+    current_state.pid_conf->output = 0;
+    current_state.pid_conf->window_size = 0;
 }
 
 
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
-    update_pid_conf_from_str(cmd->cmd->payload, current_state->pid_conf)
+    if(strcmp((char*)cmd->cmd->payload, CMD_REQ) == 0) {
+        send_message(
+            radio, GATEWAYID, CMD_PID_CONF,
+            (byte*)current_state.pid_conf, sizeof(current_state.pid_conf)
+        );
+    } else {
+        PIDConf pid_conf;
+        memcpy(&pid_conf, cmd->cmd->payload, sizeof(pid_conf));
+        if(pid_conf.control != PID_CONF_CONTROL) {
+            Serial.println("Got pid conf with bad control");
+            Serial.println(pid_conf.control);
+            return;
+        }
+        update_pid_conf_from_obj(current_state.pid_conf, &pid_conf);
+    }
 }
 
 
-void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
-    // respond with current state
-    // Serial.println("Setting setpoint");
-    if(strcmp(cmd->cmd->payload, "REQ") == 0) {
-        send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
-        return;
-    }
+// void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
+//     // Serial.println("Got setpoint request");
+//     // respond with current state
+//     if(strcmp(cmd->cmd->payload, CMD_REQ) == 0) {
+//         // Serial.println("Sending PID config");
+//         send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.pid_conf->setpoint);
+//         return;
+//     }
 
-    double value;
-    zatof(cmd->cmd->payload, &value);
-    if(value == DOUBLE_ERR) {
-        // Serial.println("Error interpreting setpoint");
-        return;
-    }
-    current_state.setpoint = value;
-    // Serial.print("Set setpoint to: "); Serial.println(value);
+//     double value;
+//     zatof(cmd->cmd->payload, &value);
+//     if(value == DOUBLE_ERR) {
+//         // Serial.println("Error interpreting setpoint");
+//         return;
+//     }
+//     current_state.pid_conf->setpoint = value;
+//     // Serial.print("Set setpoint to: "); Serial.println(value);
 
-    send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
-}
+//     // Echo back the state
+//     // send_message(radio, GATEWAYID, CMD_SETPOINT, current_state.setpoint);
+// }
 
 
 #endif

@@ -2,8 +2,9 @@
 #define SERIAL_COMMANDS_H
 
 #include <RFM69.h>
+#include "config.h"
 #include "commands.h"
-
+#include "common.h"
 
 extern const char* SERIAL_SETPOINT;
 extern const char* SERIAL_PID_CONF;

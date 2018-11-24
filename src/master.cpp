@@ -5,14 +5,6 @@
 #include "master.h"
 
 
-/*
-For each serial command, define a command name and a command function.
-Assign the command function to another name: prepend the original name
-with cmd_. We do this to ensure that we catch any function type errors
-at compile time rather than runtime. Well...warnings, not errors. Maybe
-play with -fpermissive.
-*/
-
 int last_period = -1;
 
 
@@ -40,13 +32,13 @@ void do_specific_work(RFM69* radio, NodeCmd* data) {
         }
     }
 
-    int current_period = millis() / 3000;
-    if(current_period != last_period) {
-        Serial.println("Sending message ...");
-        set_setpoint(radio, 99, 60.66);
-        last_period = current_period;
-    }
-
+    // Periodically set the setpoint
+    // int current_period = millis() / 3000;
+    // if(current_period != last_period) {
+    //     Serial.println("Sending message ...");
+    //     set_setpoint(radio, 99, 60.66);
+    //     last_period = current_period;
+    // }
 }
 
 
@@ -74,10 +66,6 @@ void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
     serial_report_pid_conf(cmd);
 }
 
-
-void cmd_setpoint(NodeCmd* cmd, RFM69* radio) {
-    serial_report_setpoint(cmd);
-}
 
 
 #endif

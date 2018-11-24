@@ -18,10 +18,6 @@
 
 typedef struct {
     PIDConf* pid_conf;
-
-    double setpoint;
-    double output;
-    int window_size;
 } SlaveState;
 
 
@@ -29,7 +25,7 @@ void handle(RFM69* radio);
 void device_setup(RFM69* radio);
 
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio);
-void cmd_setpoint(NodeCmd* cmd, RFM69* radio);
+// void cmd_setpoint(NodeCmd* cmd, RFM69* radio);
 
 #endif
 #endif

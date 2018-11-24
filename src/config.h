@@ -7,9 +7,9 @@
 // #define ROLE_MASTER
 
 // The id of the master
-#define GATEWAYID 1
+// #define GATEWAYID 1
 
-#define NODEID 1
+// #define NODEID 1
 
 #define PROMISCUOS_MODE false
 
@@ -41,8 +41,7 @@ Everybody has the responsibility to interpret the payload as necessary.
 typedef struct {
     // 1 byte
     byte command;
-    // 44 bytes for payload
-    char payload[PAYLOAD_SIZE];
+    byte payload[PAYLOAD_SIZE];
 } TransportCmd;
 
 /*
@@ -51,6 +50,7 @@ the node and strength of the signal
 */
 typedef struct {
     TransportCmd* cmd;
+
     bool ack_requested;
     int node_id;
     int rssi;
@@ -67,10 +67,17 @@ typedef struct {
 
 // When this is a master, NODEID must always be 1
 #ifdef ROLE_MASTER
+    // this is for test only
+    #define GATEWAYID 1
+    #define NODEID 1
+
     #if NODEID != 1
         #error "When role is master, NODEID must be 1"
     #endif
 #elif defined ROLE_SLAVE
+    // this is for test only
+    #define GATEWAYID 1
+    #define NODEID 99
     // When this is a slave, must always be 1
     #if NODEID == 1
         #error "When role is slave, NODEID must not be 1"

@@ -57,7 +57,6 @@ The array must terminate in a null pointer.
 The second parameter is the actual string received from serial.
 */
 serial_function get_serial_cmd(const void** cmd_map, char* payload);
-byte break_command(const char* command, char container[][20], int take_only);
 byte parse_target(const char* target_str);
 
 

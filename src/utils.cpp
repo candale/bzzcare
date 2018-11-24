@@ -3,6 +3,7 @@
 
 
 #include "utils.h"
+#include "common.h"
 
 double DOUBLE_ERR = 1111.11;
 
@@ -87,10 +88,11 @@ void del_cmd(NodeCmd* cmd) {
 }
 
 
-bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) {
+bool send_message(RFM69* radio, int target, byte cmd_code, byte* payload, byte size) {
     TransportCmd cmd;
     cmd.command = cmd_code;
-    strcpy(cmd.payload, payload);
+    memset(cmd.payload, 0, PAYLOAD_SIZE);
+    memcpy(cmd.payload, payload, size);
 
     if (radio->sendWithRetry(target, (const void*)(&cmd), sizeof(cmd), SEND_NUM_RETRIES)) {
         // Serial.println("Send with success");
@@ -99,6 +101,11 @@ bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) 
 
     // Serial.println("Failure in sending.");
     return false;
+}
+
+
+bool send_message(RFM69* radio, int target, byte cmd_code, const char* payload) {
+    return send_message(radio, target, cmd_code, (byte*)payload, strlen(payload));
 }
 
 
@@ -177,7 +184,29 @@ void print_command(NodeCmd* cmd) {
     Serial.print((char)cmd->cmd->command);
 
     Serial.print(" payload=");
-    Serial.println(cmd->cmd->payload);
+    Serial.println((char*)cmd->cmd->payload);
+}
+
+
+/*
+Break a semi-colon separated string into an array of char arrays.
+We assume that a single command element cannot be more than 20 characters
+Maybe we should be a bit more conservative than that.
+*/
+byte break_command(const char* command, char container[][20], int take_only) {
+    int len = strlen(command) + 1;
+    char command_cpy[len];
+    strcpy(command_cpy, command);
+    command_cpy[len - 1] = 0;
+
+    byte num_tokens = 0;
+    char* token = strtok(command_cpy, ";");
+    while(token != NULL && num_tokens != take_only) {
+        strncpy(container[num_tokens++], token, 10);
+        token = strtok(NULL, ";");
+    }
+
+    return num_tokens;
 }
 
 #endif
