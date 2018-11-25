@@ -1,8 +1,6 @@
 #ifndef CONFIG_H
 #define CONFIG_H
 
-#include <RFM69.h>
-
 // #define ROLE_SLAVE
 // #define ROLE_MASTER
 
@@ -29,32 +27,6 @@
 #define PAYLOAD_SIZE 44
 
 #define SEND_NUM_RETRIES 4
-
-/*
-This is supposed to encapsulate the command, from 0 to 255, and a payload
-that will be the string representation of whatever is sent.
-
-This representation is used for transport.
-
-Everybody has the responsibility to interpret the payload as necessary.
-*/
-typedef struct {
-    // 1 byte
-    byte command;
-    byte payload[PAYLOAD_SIZE];
-} TransportCmd;
-
-/*
-This encapsulates the a TransportCmd and adds additional information about
-the node and strength of the signal
-*/
-typedef struct {
-    TransportCmd* cmd;
-
-    bool ack_requested;
-    int node_id;
-    int rssi;
-} NodeCmd;
 
 
 // == EVERYTHING THAT IS BELOW YOU DON'T USUALLY TOUCH ==

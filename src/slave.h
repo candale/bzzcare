@@ -3,17 +3,16 @@
 #define SLAVE_H
 
 #include <RFM69.h>
+#include <Wire.h>
+
 #include "config.h"
 #include "utils.h"
+#include "comms.h"
 #include "commands.h"
 #include "common.h"
+#include "Adafruit_MCP9808.h"
 
 #define TRANSMITPERIOD 1000
-
-#define PID_DEFAULT    4
-#define INIT_KP        2
-#define INIT_KI        0.005
-#define INIT_KD        2
 
 
 typedef struct {

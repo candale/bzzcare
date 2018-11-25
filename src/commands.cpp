@@ -7,18 +7,30 @@ void cmd_reboot(NodeCmd* cmd, RFM69* radio);
 void cmd_report_capabilities(NodeCmd* cmd, RFM69* radio);
 void cmd_test_ack(NodeCmd* cmd, RFM69* radio);
 
+/*
+We define this command only for the master since only slaves send errors tO
+the gateway; there's not obvious reason why it should happen vice-versa.
+
+
+*/
+#ifdef ROLE_MASTER
+    void cmd_report_err(NodeCmd* cmd, RFM69* radio);
+#endif
+
 
 const cmd_function SYS_CMD_MAP [] = {
     cmd_reboot,
     cmd_report_capabilities,
     cmd_test_ack,
+    #ifdef ROLE_MASTER
+        cmd_report_err,
+    #endif
     0
 };
 
 
 const cmd_function CMD_MAP [] = {
     cmd_pid_conf,
-    // cmd_setpoint,
     0
 };
 
@@ -106,7 +118,6 @@ void cmd_report_capabilities(NodeCmd* cmd, RFM69* radio) {
 void cmd_test_ack(NodeCmd* cmd, RFM69* radio) {
     // Serial.println("Responding to ACK request ...");
 }
-
 
 
 #endif

@@ -5,6 +5,7 @@
 #include <RFM69.h>
 #include "config.h"
 #include "utils.h"
+#include "comms.h"
 #include "commands.h"
 #include "serial_commands.h"
 

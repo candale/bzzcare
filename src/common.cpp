@@ -94,7 +94,7 @@ bool update_pid_conf_from_obj(PIDConf* dest_pid_conf, PIDConf* source_pid_conf) 
 }
 
 
-void init_pid_conf(PIDConf* pid_conf) {
+void init_pid_conf_blank(PIDConf* pid_conf) {
     pid_conf->control = PID_CONF_CONTROL;
     pid_conf->kp = PID_CONF_IGNORE_VAL;
     pid_conf->ki = PID_CONF_IGNORE_VAL;
@@ -102,6 +102,19 @@ void init_pid_conf(PIDConf* pid_conf) {
     pid_conf->err = PID_CONF_IGNORE_VAL;
     pid_conf->window_size = PID_CONF_IGNORE_VAL;
     pid_conf->setpoint = PID_CONF_IGNORE_VAL;
+}
+
+
+void init_pid_conf_default_or_saved(PIDConf* pid_conf) {
+    pid_conf->control = PID_CONF_CONTROL;
+
+    pid_conf->kp = PID_CONF_KP_DEFAULT;
+    pid_conf->ki = PID_CONF_KI_DEFAULT;
+    pid_conf->kd = PID_CONF_KD_DEFAULT;
+    pid_conf->setpoint = PID_CONF_SETPONT_DEFAULT;
+    pid_conf->window_size = PID_CONF_WINDOW_SIZE_DEFAULT;
+    pid_conf->output = 0;
+    pid_conf->err = 0;
 }
 
 #endif

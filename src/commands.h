@@ -14,6 +14,7 @@
 #define CMD_REBOOT 1
 #define CMD_REPORT_CAPABILITIES 2
 #define CMD_TEST_ACK 3
+#define CMD_REPORT_ERR 4
 
 typedef void (*cmd_function)(NodeCmd*, RFM69*);
 typedef void (*serial_function)(RFM69*, char*);
@@ -82,7 +83,6 @@ is as small as possible.
 The gateway radio commands get executed when a slave send data its way. These
 commands have the responsibility to make up the text representation of the
 command received and send to the serial.
-
 
 
 */

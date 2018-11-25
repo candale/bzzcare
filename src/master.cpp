@@ -67,6 +67,11 @@ void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {
 }
 
 
+void cmd_report_err(NodeCmd* cmd, RFM69* radio) {
+
+}
+
+
 
 #endif
 #endif

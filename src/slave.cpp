@@ -6,7 +6,25 @@
 
 
 SlaveState current_state;
-int last_period = -1;
+Adafruit_MCP9808 temp_sensor = Adafruit_MCP9808();
+int LAST_PERIOD = -1;
+
+
+void report_err(RFM69* radio, const char* message) {
+    send_message(radio, GATEWAYID, CMD_REPORT_ERR, message);
+}
+
+
+void device_setup(RFM69* radio) {
+    current_state.pid_conf = (PIDConf*)malloc(sizeof(PIDConf));
+    init_pid_conf_default_or_saved(current_state.pid_conf);
+
+    if (!temp_sensor.begin()) {
+        Serial.println("Couldn't find MCP9808!");
+        report_err(radio, "no temp sensor");
+        while (1);
+    }
+}
 
 
 void do_specific_work(RFM69* radio, NodeCmd* data) {
@@ -29,18 +47,6 @@ void handle(RFM69* radio) {
 }
 
 
-void device_setup(RFM69* radio) {
-    Serial.print("Size of PIDConf: ");Serial.println(sizeof(PIDConf));
-    current_state.pid_conf = (PIDConf*)malloc(sizeof(PIDConf));
-    current_state.pid_conf->control = PID_CONF_CONTROL;
-
-    current_state.pid_conf->kp = INIT_KP;
-    current_state.pid_conf->ki = INIT_KI;
-    current_state.pid_conf->kd = INIT_KD;
-    current_state.pid_conf->setpoint = 5;
-    current_state.pid_conf->output = 0;
-    current_state.pid_conf->window_size = 0;
-}
 
 
 void cmd_pid_conf(NodeCmd* cmd, RFM69* radio) {

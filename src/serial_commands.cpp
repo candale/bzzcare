@@ -36,7 +36,7 @@ with at least one parameter being specified
 */
 void pid_conf_set(RFM69* radio, byte target, const char* pid_conf_data) {
     PIDConf pid_conf;
-    init_pid_conf(&pid_conf);
+    init_pid_conf_blank(&pid_conf);
 
     update_pid_conf_from_str(pid_conf_data, &pid_conf);
     send_message(radio, target, CMD_PID_CONF, (byte *)&pid_conf, sizeof(pid_conf));
@@ -78,7 +78,7 @@ char* get_after_command_and_target(const char* command) {
 
 
 /*
-Interpret the serial command for setting/requesting the PID conf to/from
+Interpret the serial command for set ting/requesting the PID conf to/from
 a node.
 The command is as follows:
 - set: pid;<target:bytes>;{[kp|ki|kd]=<value:double>}+
