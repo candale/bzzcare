@@ -8,6 +8,7 @@
 
 extern const char* SERIAL_PID_CONF;
 
+
 void serial_pid_conf(RFM69* radio, char* command);
 void serial_report_pid_conf(NodeCmd* cmd);
 void pid_conf_set(RFM69* radio, byte target, const char* pid_conf_data);

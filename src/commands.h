@@ -33,16 +33,58 @@ extern char CMD_REQ [];
 // Temperature PID settings
 #define CMD_PID_CONF 20
 
-// Temperature setting
-#define CMD_SETPOINT 21
-
 
 /*
-Both master and slave implement the same exact set of commands. Slave commands
-have the responsibility  of changing and reporting the device state.
-The master acts only as a proxy. This is why it implements all the commands
-of the slave: every command issued to or from a slave must be routed
-to the slave or back to the serial command.
+Both master and slave implement the same exact set of commands.
+Slave commands have the responsibility  of changing and reporting the device
+state.
+Master commands are used only for reporting what a slave sent up to the
+serial interface. So the master acts only as a proxy between the serial comms
+and the slaves.
+
+Data flow:
+
+SERIAL -> GATEWAY -> SLAVE
+SLAVE -> GATEWAY -> SERIAL
+
+There are two types of commands: radio and serial.
+Serial commands are only between a device connected to the gateway and the
+gateway.
+Radio commands are between the gateway and slaves.
+
+
+Serial commands
+===============
+
+Serial commands get executed when there is input from the serial. In this
+case the gateway acts as a proxy: it interprets the data from the serial, turns
+it into a domain-specific command and sends it over the radio to the specified
+target(s).
+
+Incoming serial commands must have the following form:
+<cmd>;<target>;<payload>
+
+The <payload> is interpreted by the serial command responsible for the
+send <cmd>.
+
+Radio commands
+==============
+
+Radio commands get executed when data is received by one of the slave devices
+or when data is received by the gateway. When a slave receives a command it
+has the responsibility to execute it. When the gateway receives a command from
+a slave, it has the responsibility to act as a proxy and forward the command,
+in the appropriate format, to the serial interface.
+
+It is preferred to use structs for sending data such that the parsing overhead
+is as small as possible.
+
+The gateway radio commands get executed when a slave send data its way. These
+commands have the responsibility to make up the text representation of the
+command received and send to the serial.
+
+
+
 */
 extern const cmd_function CMD_MAP [];
 void route_cmd(NodeCmd* cmd, RFM69* radio);
