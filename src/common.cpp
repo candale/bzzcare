@@ -84,7 +84,7 @@ bool update_pid_conf_from_obj(PIDConf* dest_pid_conf, PIDConf* source_pid_conf) 
         dest_pid_conf->setpoint = source_pid_conf->setpoint;
         changed = true;
     }
-    if(dest_pid_conf->window_size != (int)source_pid_conf->window_size &&
+    if(dest_pid_conf->window_size != (unsigned int)source_pid_conf->window_size &&
             source_pid_conf->window_size != (int)PID_CONF_IGNORE_VAL) {
         dest_pid_conf->window_size = source_pid_conf->window_size;
         changed = true;
@@ -102,6 +102,7 @@ void init_pid_conf_blank(PIDConf* pid_conf) {
     pid_conf->err = PID_CONF_IGNORE_VAL;
     pid_conf->window_size = PID_CONF_IGNORE_VAL;
     pid_conf->setpoint = PID_CONF_IGNORE_VAL;
+    pid_conf->current_temp = PID_CONF_IGNORE_VAL;
 }
 
 
@@ -115,6 +116,7 @@ void init_pid_conf_default_or_saved(PIDConf* pid_conf) {
     pid_conf->window_size = PID_CONF_WINDOW_SIZE_DEFAULT;
     pid_conf->output = 0;
     pid_conf->err = 0;
+    pid_conf->current_temp = 0;
 }
 
 #endif

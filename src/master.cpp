@@ -18,6 +18,9 @@ void do_specific_work(RFM69* radio, NodeCmd* data) {
             if(c == '\n') {
                 break;
             }
+            if(c == '\r') {
+                Serial.println("err: must be new line");
+            }
 
             command[index++] = c;
             // it appears we need this to get the serial uninterrupted
@@ -31,14 +34,6 @@ void do_specific_work(RFM69* radio, NodeCmd* data) {
             func(radio, command);
         }
     }
-
-    // Periodically set the setpoint
-    // int current_period = millis() / 3000;
-    // if(current_period != last_period) {
-    //     Serial.println("Sending message ...");
-    //     set_setpoint(radio, 99, 60.66);
-    //     last_period = current_period;
-    // }
 }
 
 

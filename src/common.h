@@ -8,14 +8,18 @@
 // in mind when you send it over the wire, the buffer for any of them must be 9
 #define PID_CONF_CONTROL 0xAA
 #define PID_CONF_IGNORE_VAL 12345.12345
-#define PID_CONF_KP_DEFAULT 2
-#define PID_CONF_KI_DEFAULT 0.005
-#define PID_CONF_KD_DEFAULT 2
+#define PID_CONF_KP_DEFAULT 1400
+#define PID_CONF_KI_DEFAULT 10
+#define PID_CONF_KD_DEFAULT 0
 #define PID_CONF_SETPONT_DEFAULT 7
 // In milliseconds
 #define PID_CONF_WINDOW_SIZE_DEFAULT 1000
 
 
+// TODO: we need to split this up in multiple structs: one that deals with PID
+//       conf, other with relay state and maybe other with current_temp?
+//       it is easier to leave it like this for now because I don't have to
+//       create a bunch o commands
 typedef struct {
     // Make sure you always initialize control with PID_CONF_CONTROL
     byte control;
@@ -24,8 +28,10 @@ typedef struct {
     double kd;
     double err;
     double setpoint;
-    int window_size;
-    byte output;
+    unsigned int window_size;
+    double output;
+    byte relay_state;
+    double current_temp;
 } PIDConf;
 
 

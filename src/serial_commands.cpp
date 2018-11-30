@@ -124,18 +124,21 @@ void serial_report_pid_conf(NodeCmd* cmd) {
         return;
     }
 
-    char data[120];
-    char kp[10], ki[10], kd[10], ks[10], err[10];
+    // TODO: figure out how many chars do we actually need
+    char data[200];
+    char kp[10], ki[10], kd[10], ks[10], ko[10], err[10], temp[10];
     dtostrf(reported_pid_conf.kp, 3, 2, kp);
     dtostrf(reported_pid_conf.ki, 3, 2, ki);
     dtostrf(reported_pid_conf.kd, 3, 2, kd);
     dtostrf(reported_pid_conf.err, 3, 2, err);
     dtostrf(reported_pid_conf.setpoint, 3, 2, ks);
+    dtostrf(reported_pid_conf.current_temp, 3, 2, temp);
+    dtostrf(reported_pid_conf.output, 3, 2, ko);
     sprintf(
-        data, "%s;%u;%d;kp=%s;ki=%s;kd=%s;kw=%d;ks=%s;err=%s;ko=%s",
+        data, "%s;%u;%d;kp=%s;ki=%s;kd=%s;kw=%d;ks=%s;err=%s;kt=%s;ko=%s;kr=%s",
         SERIAL_PID_CONF, cmd->node_id, cmd->rssi,
-        kp, ki, kd, reported_pid_conf.window_size, ks, err,
-        reported_pid_conf.output == 1 ? "on" : "off"
+        kp, ki, kd, reported_pid_conf.window_size, ks, err, temp, ko,
+        reported_pid_conf.relay_state == 1 ? "on" : "off"
     );
     Serial.println(data);
 }

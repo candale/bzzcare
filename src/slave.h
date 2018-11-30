@@ -4,6 +4,7 @@
 
 #include <RFM69.h>
 #include <Wire.h>
+#include <PID_v1.h>
 
 #include "config.h"
 #include "utils.h"
@@ -12,7 +13,11 @@
 #include "common.h"
 #include "Adafruit_MCP9808.h"
 
-#define TRANSMITPERIOD 1000
+
+#define READ_TEMP_PERIOD 1000
+#define REPORT_PID_CONF_PERIOD 2000
+
+#define RELAY_PIN 8
 
 
 typedef struct {

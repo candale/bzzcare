@@ -25,5 +25,6 @@ void setup() {
 }
 
 void loop() {
+    // TODO: rename this into something more relevant
     handle(radio);
 }
