@@ -1,0 +1,25 @@
+{
+	"build_systems":
+	[
+		{
+			"file_regex": "^[ ]*File \"(...*?)\", line ([0-9]*)",
+			"name": "Anaconda Python Builder",
+			"selector": "source.python",
+			"shell_cmd": "\"/home/andrei/.virtualenvs/bzzcare/bin/python\" -u \"$file\""
+		}
+	],
+	"folders":
+	[
+		{
+			"path": "."
+		},
+		{
+			"name": "ve",
+			"path": "~/.virtualenvs/bzzcare"
+		}
+	],
+	"settings":
+	{
+		"python_interpreter": "~/.virtualenvs/bzzcare/bin/python"
+	}
+}
